@@ -1,5 +1,8 @@
 # UnihanTest
- 修复原版BUG
+
+### 如果你是普通用户请直接 [点这里](https://github.com/Losketch/UnihanTest/releases) 或到 [releases](https://github.com/Losketch/UnihanTest/releases) 界面 下载直接配置好的安卓应用
+----
+修复原版BUG
  
 支持Unicode 15.1.0.0
 
