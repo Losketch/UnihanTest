@@ -12,6 +12,11 @@ with open(file_path, "w", encoding="utf-8") as f:
     for i in range(0x2F00, 0x2FD5 + 1):
         f.write("U+{:04X}\n".format(i))
     
+    #f.write("#表意文字描述字符\n")
+    for i in range(0x2FF0, 0x2FFF + 1):
+        f.write("U+{:04X}\n".format(i))
+    f.write("U+31EF\n")
+    
     #f.write("#中日韩部首补充\n")
     for i in range(0x2E80, 0x2E99 + 1):
         f.write("U+{:04X}\n".format(i))
@@ -22,7 +27,7 @@ with open(file_path, "w", encoding="utf-8") as f:
     f.write("U+3007\n")
     
     #f.write("#中日韩汉字笔画\n")
-    for i in range(0x31C0, 0x31E3 + 1):
+    for i in range(0x31C0, 0x31E5 + 1):
         f.write("U+{:04X}\n".format(i))
     
     #f.write("#基本区\n")
