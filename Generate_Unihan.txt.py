@@ -46,7 +46,7 @@ UNICODE_RANGES = [
     UnicodeRange("扩展G", [(0x30000, 0x3134A)]),
     UnicodeRange("扩展H", [(0x31350, 0x323AF)]),
     UnicodeRange("扩展I", [(0x2EBF0, 0x2EE5D)]),
-    UnicodeRange("扩展J", [(0x323B0, 0x3347B)]),
+    UnicodeRange("扩展J", [(0x323B0, 0x33479)]),
 ]
 
 def main():
