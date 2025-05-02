@@ -49,7 +49,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:fontFamily="monospace"
-                android:text="Hello World!"
+                android:text="XXXXX"
                 android:textSize="18sp" />
 
         </LinearLayout>
@@ -78,7 +78,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Hello World!"
+            android:text="Nan / Nan ="
             android:textSize="24sp" />
 
         <TextView
@@ -88,7 +88,7 @@
             android:layout_gravity="center"
             android:layout_marginTop="5dp"
             android:gravity="center"
-            android:text="Hello World!"
+            android:text="Nan%"
             android:textSize="48sp" />
 
         <!-- 修改ScrollView使其有固定高度且可滚动 -->
