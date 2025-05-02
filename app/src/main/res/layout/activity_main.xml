@@ -40,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:maxLines="1"
-                android:text="😀"
+                android:text="⍼"
                 android:textSize="50sp" />
 
             <TextView

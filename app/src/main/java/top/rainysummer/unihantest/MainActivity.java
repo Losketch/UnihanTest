@@ -26,7 +26,7 @@ import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity {
 
     private static final double EPSILON = 0.0001;
-    private static final String SPECIAL_UNICODE = "&#x1F1F9&#x1F1FC";
+    private static final String SPECIAL_UNICODE = "&#x1F1E8&#x1F1F3";
     private static final String ZWJ_SEQUENCE = "&#x200D&#x";
     private static final int BATCH_SIZE = 80;
     private static final String BLOCK_PREFIX = "#BLOCK:";
