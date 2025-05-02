@@ -13,7 +13,7 @@ def write_unicode_ranges(filename: str, ranges: List[UnicodeRange], add_comments
     with open(filename, "w", encoding="utf-8") as f:
         for range_group in ranges:
             if add_comments and range_group.name:
-                f.write(f"#{range_group.name}\n")
+                f.write(f"#BLOCK: {range_group.name}\n")
             for code in range_group.codes:
                 if isinstance(code, tuple):
                     start, end = code
@@ -37,20 +37,20 @@ UNICODE_RANGES = [
     UnicodeRange("兼容区", [(0xF900, 0xFA6D), (0xFA70, 0xFAD9)]),
 
     UnicodeRange("扩展B", [(0x20000, 0x2A6DF)]),
-    UnicodeRange("扩展C", [(0x2A700, 0x2B739)]),
+    UnicodeRange("扩展C", [(0x2A700, 0x2B73F)]),
     UnicodeRange("扩展D", [(0x2B740, 0x2B81D)]),
-    UnicodeRange("扩展E", [(0x2B820, 0x2CEA1)]),
+    UnicodeRange("扩展E", [(0x2B820, 0x2CEAD)]),
     UnicodeRange("扩展F", [(0x2CEB0, 0x2EBE0)]),
     UnicodeRange("兼容补充区", [(0x2F800, 0x2FA1D)]),
 
     UnicodeRange("扩展G", [(0x30000, 0x3134A)]),
     UnicodeRange("扩展H", [(0x31350, 0x323AF)]),
     UnicodeRange("扩展I", [(0x2EBF0, 0x2EE5D)]),
-    UnicodeRange("扩展J", [(0x323B0, 0x3347B)]),
+    UnicodeRange("扩展J", [(0x323B0, 0x33479)]),
 ]
 
 def main():
-    add_comments = False  # Whether to add comment names (True/False)
+    add_comments = True  # Whether to add comment names (True/False)
     file_path = os.path.join(os.getcwd(), "Unihan.txt")
     count = write_unicode_ranges(file_path, UNICODE_RANGES, add_comments)
     print(f"Total {count} rows of UniHan characters")

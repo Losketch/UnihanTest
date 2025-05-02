@@ -8,9 +8,10 @@
 
     <LinearLayout
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
+        android:layout_marginTop="24dp"
         android:layout_marginBottom="24dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -22,9 +23,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginBottom="80dp"
-            android:layout_weight="1"
-            android:gravity="center"
+            android:layout_marginBottom="40dp"
             android:text="Unihan 支持测试"
             android:textSize="30sp" />
 
@@ -49,7 +48,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_weight="1"
                 android:fontFamily="monospace"
                 android:text="Hello World!"
                 android:textSize="18sp" />
@@ -61,7 +59,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:layout_weight="1"
             android:fontFamily="monospace"
             android:gravity="right|end"
             android:textSize="14sp" />
@@ -71,7 +68,7 @@
             style="@android:style/Widget.Material.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="50dp"
+            android:layout_marginBottom="20dp"
             android:max="103367"
             android:visibility="visible"
             tools:visibility="visible" />
@@ -90,18 +87,35 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="5dp"
-            android:layout_weight="1"
             android:gravity="center"
             android:text="Hello World!"
             android:textSize="48sp" />
+
+        <!-- 修改ScrollView使其有固定高度且可滚动 -->
+        <ScrollView
+            android:id="@+id/scrollView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:fadeScrollbars="false"
+            android:scrollbarStyle="insideOverlay"
+            android:scrollbars="vertical">
+
+            <LinearLayout
+                android:id="@+id/blockResultsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp" />
+        </ScrollView>
 
         <TextView
             android:id="@+id/txtV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="50dp"
-            android:layout_weight="1"
             android:gravity="center"
             android:text="基于 Unicode 17.0 beta"
             android:textSize="14sp" />
