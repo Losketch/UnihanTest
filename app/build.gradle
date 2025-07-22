@@ -10,8 +10,8 @@ android {
         applicationId "top.rainysummer.unihantest"
         minSdkVersion 23
         targetSdkVersion 30
-        versionCode 2
-        versionName "1.1"
+        versionCode 1600
+        versionName "17.0 beta"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
