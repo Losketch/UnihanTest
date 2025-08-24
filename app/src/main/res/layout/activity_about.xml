@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
     android:padding="32dp"
     tools:context=".AboutActivity">
 
@@ -40,7 +39,6 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:text="Unicode 字体支持测试"
-            android:textColor="@android:color/black"
             android:textSize="24sp"
             android:textStyle="bold" />
 
@@ -59,7 +57,6 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
             android:text="👨‍💻 作者：Losketch"
-            android:textColor="@android:color/black"
             android:textSize="16sp" />
 
         <TextView

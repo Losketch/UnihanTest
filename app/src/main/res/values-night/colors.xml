@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_color">#FF1976D2</color>
+    <color name="primary_dark">#FF1565C0</color>
+    <color name="secondary_color">#FF43A047</color>
+    <color name="secondary_dark">#FF388E3C</color>
+    <color name="accent_color">#FFFFB300</color>
+    <color name="button_outline_stroke">#FF1976D2</color>
+
+    <color name="black">#FFFFFFFF</color>
+    <color name="white">#FF000000</color>
+</resources>
