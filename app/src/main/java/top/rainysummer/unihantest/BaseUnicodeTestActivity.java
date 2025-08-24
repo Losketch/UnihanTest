@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
 
@@ -31,8 +32,10 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
     private static final int BATCH_SIZE = 80;
     private static final String BLOCK_PREFIX = "#BLOCK:";
 
-    private int numValid = 0;
-    private int numTotal = 0;
+    // 使用原子类型确保线程安全
+    private final AtomicInteger totalValidCount = new AtomicInteger(0);
+    private final AtomicInteger totalProcessedCount = new AtomicInteger(0);
+
     private Map<String, BlockStatistics> blockStats = new HashMap<>();
     private String currentBlock = "Unknown";
 
@@ -81,61 +84,88 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
 
     private void processUnicodeFile() {
         UnicodeFileProcessor processor = new UnicodeFileProcessor(
-            getResources().getAssets(),
-            getAssetFileName(),
-            new UnicodeFileProcessor.ProcessCallback() {
-                @Override
-                public void onProgress(String formattedUnicode, int validCount, int totalCount) {
-                    numValid = validCount;
-                    numTotal = totalCount;
-                    
-                    BlockStatistics stats = blockStats.get(currentBlock);
-                    if (stats != null) {
-                        stats.total++;
-                        if (UnicodeValidator.isValidEmoji(paint, formattedUnicode)) {
-                            stats.valid++;
+                getResources().getAssets(),
+                getAssetFileName(),
+                new UnicodeFileProcessor.ProcessCallback() {
+                    @Override
+                    public void onProgress(String formattedUnicode, int validCount, int totalCount) {
+                        // 更新当前区块统计
+                        BlockStatistics stats = blockStats.get(currentBlock);
+                        if (stats != null) {
+                            stats.total++;
+                            if (UnicodeValidator.isValidEmoji(paint, formattedUnicode)) {
+                                stats.valid++;
+                            }
                         }
+
+                        // 更新总体进度显示（但不用于最终计算）
+                        mainHandler.post(() -> {
+                            textView2.setText(validCount + " / " + totalCount + " = ");
+                            textView4.setText(totalCount + " / " + progressBar.getMax());
+                            progressBar.setProgress(totalCount);
+                        });
                     }
-                }
 
-                @Override
-                public void onBatchComplete(String batchText) {
-                    postUpdateUI(batchText);
-                }
+                    @Override
+                    public void onBatchComplete(String batchText) {
+                        postUpdateUI(batchText);
+                    }
 
-                @Override
-                public void onBlockStart(String blockName) {
-                    if (blockStats.containsKey(currentBlock)) {
+                    @Override
+                    public void onBlockStart(String blockName) {
+                        // 完成上一个区块的处理
+                        if (blockStats.containsKey(currentBlock)) {
+                            postBlockUpdate(currentBlock);
+                        }
+
+                        // 开始新区块
+                        currentBlock = blockName;
+                        CompatUtils.mapPutIfAbsent(blockStats, currentBlock, new BlockStatistics());
+                    }
+
+                    @Override
+                    public void onComplete(int totalLines) {
+                        // 处理最后一个区块
                         postBlockUpdate(currentBlock);
+
+                        // 计算总体统计
+                        calculateOverallStatistics();
+
+                        mainHandler.post(() -> {
+                            progressBar.setMax(totalLines);
+                            progressBar.setProgress(totalLines);
+                            textView3.setVisibility(View.GONE);
+                            updateFinalStatus();
+                        });
                     }
-                    currentBlock = blockName;
-                    CompatUtils.mapPutIfAbsent(blockStats, currentBlock, new BlockStatistics());
-                }
 
-                @Override
-                public void onComplete(int totalLines) {
-                    postBlockUpdate(currentBlock);
-                    mainHandler.post(() -> {
-                        progressBar.setMax(totalLines);
-                        progressBar.setProgress(totalLines);
-                        textView3.setVisibility(View.GONE);
-                        updateFinalStatus();
-                    });
-                }
+                    @Override
+                    public void onError(String error) {
+                        postError(error);
+                    }
 
-                @Override
-                public void onError(String error) {
-                    postError(error);
+                    @Override
+                    public void onLineCountUpdate(int lineCount) {
+                        mainHandler.post(() -> progressBar.setMax(lineCount));
+                    }
                 }
-
-                @Override
-                public void onLineCountUpdate(int lineCount) {
-                    mainHandler.post(() -> progressBar.setMax(lineCount));
-                }
-            }
         );
 
         processor.process();
+    }
+
+    // 计算所有区块的总体统计
+    private void calculateOverallStatistics() {
+        int totalValid = 0;
+        int totalProcessed = 0;
+
+        for (BlockStatistics stats : blockStats.values()) {
+            totalValid += stats.valid;
+            totalProcessed += stats.total;
+        }
+
+        totalValidCount.set(totalValid);
+        totalProcessedCount.set(totalProcessed);
     }
 
     private void postBlockUpdate(String blockName) {
@@ -162,12 +192,8 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
         String lastLine = lines[lines.length - 1];
 
         textView.setText(CompatUtils.fromHtml(lastLine));
-        textView2.setText(numValid + " / " + numTotal + " = ");
         textView3.setText(lastLine.replace("&#x", " "));
         textView5.setVisibility(View.GONE);
-
-        textView4.setText(numTotal + " / " + progressBar.getMax());
-        progressBar.setProgress(numTotal);
     }
 
     @SuppressLint("DefaultLocale")
@@ -176,7 +202,7 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
         if (stats == null) return;
 
         TextView blockView = BlockUIManager.findOrCreateBlockView(
-            this, blockResultsContainer, scrollView, blockName);
+                this, blockResultsContainer, scrollView, blockName);
         double percentage = stats.total > 0 ? ((double) stats.valid / stats.total) * 100 : 0;
         String grade = Grade.fromScore(percentage);
 
@@ -188,15 +214,22 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
     private void updateFinalStatus() {
         if (textView == null) return;
 
-        double percentage = numTotal > 0 ? ((double) numValid / numTotal) * 100 : 0;
+        // 使用计算出的总体统计数据
+        int finalValid = totalValidCount.get();
+        int finalTotal = totalProcessedCount.get();
+
+        double percentage = finalTotal > 0 ? ((double) finalValid / finalTotal) * 100 : 0;
         String grade = Grade.fromScore(percentage);
 
         textView.setText(grade);
         textView5.setVisibility(View.VISIBLE);
         textView5.setText(String.format("%.3f%%", percentage));
 
+        // 更新最终的统计显示
+        textView2.setText(finalValid + " / " + finalTotal + " = ");
+
         TextView overallResultView = BlockUIManager.createOverallResultView(
-            this, grade, numValid, numTotal, percentage);
+                this, grade, finalValid, finalTotal, percentage);
         blockResultsContainer.addView(overallResultView, 0);
     }
 
