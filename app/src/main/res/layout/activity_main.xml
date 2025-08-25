@@ -28,7 +28,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Unicode 字体支持测试"
+            android:text="@string/main_title"
             android:textSize="28sp"
             android:textStyle="bold"
             android:layout_marginBottom="10dp"
@@ -37,7 +37,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="测试设备对Unicode字符的显示支持"
+            android:text="@string/main_subtitle"
             android:textSize="16sp"
             android:textColor="@android:color/darker_gray"
             android:layout_marginBottom="50dp"
@@ -48,7 +48,7 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_marginBottom="20dp"
-            android:text="🇨🇳 Unihan 测试"
+            android:text="@string/btn_unihan_test"
             android:textSize="18sp"
             android:textStyle="bold"
             android:background="@drawable/button_primary"
@@ -60,7 +60,7 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_marginBottom="20dp"
-            android:text="🌍 Unicode 测试"
+            android:text="@string/btn_unicode_test"
             android:textSize="18sp"
             android:textStyle="bold"
             android:background="@drawable/button_secondary"
@@ -72,7 +72,7 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_marginBottom="20dp"
-            android:text="ℹ️ 关于应用"
+            android:text="@string/btn_about"
             android:textSize="18sp"
             android:textStyle="bold"
             android:background="@drawable/button_outline"
@@ -82,7 +82,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="基于 Unicode 17.0 beta"
+            android:text="@string/unicode_version"
             android:textSize="12sp"
             android:textColor="@android:color/darker_gray"
             android:layout_marginTop="30dp" />

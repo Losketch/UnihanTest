@@ -83,6 +83,7 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
         // 在工作线程中执行，传入复用的 paint 到处理器回调里以减少重复创建
         final Paint workerPaint = paint == null ? new Paint() : paint;
         UnicodeFileProcessor processor = new UnicodeFileProcessor(
+                getApplicationContext(),
                 getResources().getAssets(),
                 getAssetFileName(),
                 new UnicodeFileProcessor.ProcessCallback() {
@@ -111,7 +112,7 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
                             pendingBatchCounter.set(0);
                             lastUiUpdateMillis = now;
                             mainHandler.post(() -> {
-                                textView2.setText(validCount + " / " + totalCount + " = ");
+                                textView2.setText(getString(R.string.progress_format, validCount, totalCount) + " = ");
                                 textView4.setText(totalCount + " / " + progressBar.getMax());
                                 progressBar.setProgress(totalCount);
                             });
@@ -151,7 +152,7 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(String error) {
-                        postError(error);
+                        postError(getString(R.string.processing_error, error));
                     }
 
                     @Override
@@ -220,7 +221,7 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
         double percentage = stats.total > 0 ? ((double) stats.valid / stats.total) * 100 : 0;
         String grade = Grade.fromScore(percentage);
 
-        blockView.setText(String.format("%s:\n %s - %d/%d (%.2f%%)",
+        blockView.setText(getString(R.string.block_result_format,
                 blockName, grade, stats.valid, stats.total, percentage));
     }
 
@@ -237,10 +238,10 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
 
         textView.setText(grade);
         textView5.setVisibility(View.VISIBLE);
-        textView5.setText(String.format("%.3f%%", percentage));
+        textView5.setText(getString(R.string.percentage_format, percentage));
 
         // 更新最终的统计显示
-        textView2.setText(finalValid + " / " + finalTotal + " = ");
+        textView2.setText(getString(R.string.progress_format, finalValid, finalTotal) + " = ");
 
         TextView overallResultView = BlockUIManager.createOverallResultView(
                 this, grade, finalValid, finalTotal, percentage);

@@ -1,5 +1,6 @@
 package top.rainysummer.unihantest;
 
+import android.content.Context;
 import android.content.res.AssetManager;
 
 import java.io.BufferedReader;
@@ -13,6 +14,7 @@ public class UnicodeFileProcessor {
     private final AssetManager assetManager;
     private final String fileName;
     private final ProcessCallback callback;
+    private final Context context;
 
     public interface ProcessCallback {
         void onProgress(String formattedUnicode, int validCount, int totalCount);
@@ -23,7 +25,8 @@ public class UnicodeFileProcessor {
         void onLineCountUpdate(int lineCount);
     }
 
-    public UnicodeFileProcessor(AssetManager assetManager, String fileName, ProcessCallback callback) {
+    public UnicodeFileProcessor(Context context, AssetManager assetManager, String fileName, ProcessCallback callback) {
+        this.context = context.getApplicationContext();
         this.assetManager = assetManager;
         this.fileName = fileName;
         this.callback = callback;
@@ -35,7 +38,8 @@ public class UnicodeFileProcessor {
             callback.onLineCountUpdate(lineCount);
             processFile();
         } catch (IOException e) {
-            callback.onError("读取 " + fileName + " 文件失败：" + e.getMessage());
+            String errMsg = context.getString(R.string.error_read_file_fail, fileName, e.getMessage());
+            callback.onError(errMsg);
         }
     }
 
@@ -84,7 +88,7 @@ public class UnicodeFileProcessor {
 
                 totalCount++;
                 String formattedUnicode = UnicodeFormatter.formatUnicode(line);
-                
+
                 if (UnicodeValidator.isValidEmoji(null, formattedUnicode)) {
                     validCount++;
                 }

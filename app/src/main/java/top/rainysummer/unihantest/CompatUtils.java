@@ -1,4 +1,3 @@
-// CompatUtils.java
 package top.rainysummer.unihantest;
 
 import android.graphics.Paint;

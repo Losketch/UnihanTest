@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginBottom="40dp"
-            android:text="Unicode 支持测试"
+            android:text="@string/unicode_test_title"
             android:textSize="30sp" />
 
         <LinearLayout
@@ -116,7 +116,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:text="基于 Unicode 17.0 beta"
+            android:text="@string/unicode_version"
             android:textSize="14sp" />
 
     </LinearLayout>

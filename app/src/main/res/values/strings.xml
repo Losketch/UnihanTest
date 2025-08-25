@@ -1,3 +1,40 @@
 <resources>
-    <string name="app_name">UnihanTest</string>
+    <string name="app_name">Unicode Font Support Test</string>
+    
+    <!-- Main Activity -->
+    <string name="main_title">Unicode Font Support Test</string>
+    <string name="main_subtitle">Test device support for Unicode character display</string>
+    <string name="btn_unihan_test">🇨🇳 Unihan Test</string>
+    <string name="btn_unicode_test">🌍 Unicode Test</string>
+    <string name="btn_about">ℹ️ About App</string>
+    <string name="unicode_version">Based on Unicode 17.0 beta</string>
+    
+    <!-- About Activity -->
+    <string name="about_app_name">Unicode Font Support Test</string>
+    <string name="about_version">Version 17.0 beta</string>
+    <string name="about_author">👨‍💻 Author: Losketch</string>
+    <string name="about_description">This is an application for testing the current system font environment\'s support for Unicode character display. By testing the Unihan character set and complete Unicode basic glyphs, it helps users understand their device\'s font support.</string>
+    <string name="btn_github">🔗 GitHub Repository</string>
+    <string name="btn_noto_font">📁 Download Noto Fonts</string>
+    <string name="btn_unicode_font">📦 Full Unicode 17.0 Font Download</string>
+    <string name="btn_back">⬅️ Back to Home</string>
+    <string name="about_copyright">© 2024-2025 Losketch\nBased on Unicode 17.0 beta</string>
+    
+    <!-- Unicode Test Activity -->
+    <string name="unicode_test_title">Unicode Support Test</string>
+    <string name="test_progress_format">%1$d / %2$d =</string>
+    <string name="test_percentage_format">%1$.1f%%</string>
+    
+    <!-- Unihan Test Activity -->
+    <string name="unihan_test_title">Unihan Support Test</string>
+    
+    <!-- Test Results -->
+    <string name="overall_result_format">Overall Result: %1$s - %2$d/%3$d (%4$.2f%%)</string>
+    <string name="block_result_format">%1$s:\n %2$s - %3$d/%4$d (%5$.2f%%)</string>
+    <string name="progress_format">%1$d / %2$d</string>
+    <string name="percentage_format">%.3f%%</string>
+    
+    <!-- Error messages -->
+    <string name="error_read_file_fail">Failed to read %1$s file: %2$s</string>
+    <string name="processing_error">Processing error: %1$s</string>
 </resources>
