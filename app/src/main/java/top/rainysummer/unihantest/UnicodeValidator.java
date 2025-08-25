@@ -9,22 +9,22 @@ public class UnicodeValidator {
     private static final String ZWJ_SEQUENCE = "&#x200D&#x";
 
     public static boolean isValidEmoji(Paint paint, String unicodeHtml) {
-        if (SPECIAL_UNICODE.equals(unicodeHtml)) {
-            return true;
-        }
-
+        if (SPECIAL_UNICODE.equals(unicodeHtml)) return true;
         try {
+            // 快速排除：ZWJ 情况先用简单比较（如果字符串形式长度不同则可能是组合）
+            boolean containsZwj = unicodeHtml.contains(ZWJ_SEQUENCE);
             Spanned sp = CompatUtils.fromHtml(unicodeHtml);
             String parsed = sp.toString();
 
-            // 在 Android 5.1.1 上，hasGlyph 方法可能不可靠
-            if (paint != null && Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
-                if (!CompatUtils.hasGlyph(paint, parsed)) {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+                if (paint != null && !CompatUtils.hasGlyph(paint, parsed)) {
                     return false;
                 }
+            } else {
+                if (SPECIAL_UNICODE.equals(unicodeHtml)) return true;
             }
 
-            if (unicodeHtml.contains(ZWJ_SEQUENCE)) {
+            if (containsZwj) {
                 String replaced = unicodeHtml.replace(ZWJ_SEQUENCE, "&#x");
                 Spanned sp2 = CompatUtils.fromHtml(replaced);
                 String replacedStr = sp2.toString();
@@ -33,7 +33,6 @@ public class UnicodeValidator {
 
             return true;
         } catch (Exception e) {
-            // 解析失败时返回 false
             return false;
         }
     }

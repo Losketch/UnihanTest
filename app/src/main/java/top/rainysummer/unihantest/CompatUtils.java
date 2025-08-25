@@ -38,19 +38,17 @@ public class CompatUtils {
 
     /**
      * 兼容各 API 的 Map.putIfAbsent 调用
-     * @return 旧值（如果存在），否则返回 null
      */
-    public static <K, V> V mapPutIfAbsent(Map<K, V> map, K key, V value) {
+    public static <K, V> void mapPutIfAbsent(Map<K, V> map, K key, V value) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             // API24+ 直接调用原生方法
-            return map.putIfAbsent(key, value);
+            map.putIfAbsent(key, value);
         } else {
             // API<24 手动实现
             if (!map.containsKey(key)) {
                 map.put(key, value);
-                return null;
             } else {
-                return map.get(key);
+                map.get(key);
             }
         }
     }

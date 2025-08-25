@@ -5,7 +5,6 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.Spanned;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -15,9 +14,6 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -27,16 +23,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
 
     private static final double EPSILON = 0.0001;
-    private static final String SPECIAL_UNICODE = "&#x1F1E8&#x1F1F3";
-    private static final String ZWJ_SEQUENCE = "&#x200D&#x";
-    private static final int BATCH_SIZE = 80;
-    private static final String BLOCK_PREFIX = "#BLOCK:";
+
+    private final AtomicInteger pendingBatchCounter = new AtomicInteger(0);
+    private volatile long lastUiUpdateMillis = 0;
+    private static final int UI_UPDATE_THROTTLE_MS = 200; // 每200ms 至多一次 UI 更新
+    private static final int UI_BATCH_THRESHOLD = 5; // 每处理 5 批 或达到时间间隔则更新 UI
 
     // 使用原子类型确保线程安全
     private final AtomicInteger totalValidCount = new AtomicInteger(0);
     private final AtomicInteger totalProcessedCount = new AtomicInteger(0);
 
-    private Map<String, BlockStatistics> blockStats = new HashMap<>();
+    private final Map<String, BlockStatistics> blockStats = new HashMap<>();
     private String currentBlock = "Unknown";
 
     private Paint paint;
@@ -83,42 +80,55 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
     }
 
     private void processUnicodeFile() {
+        // 在工作线程中执行，传入复用的 paint 到处理器回调里以减少重复创建
+        final Paint workerPaint = paint == null ? new Paint() : paint;
         UnicodeFileProcessor processor = new UnicodeFileProcessor(
                 getResources().getAssets(),
                 getAssetFileName(),
                 new UnicodeFileProcessor.ProcessCallback() {
+                    @SuppressLint("SetTextI18n")
                     @Override
                     public void onProgress(String formattedUnicode, int validCount, int totalCount) {
-                        // 更新当前区块统计
+                        // 后台只更新 block 统计和局部计数，不频繁 post UI
                         BlockStatistics stats = blockStats.get(currentBlock);
                         if (stats != null) {
                             stats.total++;
-                            if (UnicodeValidator.isValidEmoji(paint, formattedUnicode)) {
+                            if (UnicodeValidator.isValidEmoji(workerPaint, formattedUnicode)) {
                                 stats.valid++;
                             }
                         }
 
-                        // 更新总体进度显示（但不用于最终计算）
-                        mainHandler.post(() -> {
-                            textView2.setText(validCount + " / " + totalCount + " = ");
-                            textView4.setText(totalCount + " / " + progressBar.getMax());
-                            progressBar.setProgress(totalCount);
-                        });
+                        // 仅用于显示进度的计数（不做最终计算）
+                        totalProcessedCount.incrementAndGet();
+                        if (validCount > 0) {
+                            totalValidCount.set(validCount); // 保持与处理器的进度一致（仅用于临时显示）
+                        }
+
+                        // 节流 UI 更新：按批次数或时间间隔更新
+                        int pending = pendingBatchCounter.incrementAndGet();
+                        long now = System.currentTimeMillis();
+                        if (pending >= UI_BATCH_THRESHOLD || now - lastUiUpdateMillis >= UI_UPDATE_THROTTLE_MS) {
+                            pendingBatchCounter.set(0);
+                            lastUiUpdateMillis = now;
+                            mainHandler.post(() -> {
+                                textView2.setText(validCount + " / " + totalCount + " = ");
+                                textView4.setText(totalCount + " / " + progressBar.getMax());
+                                progressBar.setProgress(totalCount);
+                            });
+                        }
                     }
 
                     @Override
                     public void onBatchComplete(String batchText) {
+                        // 按批更新 UI（但同样节流），直接调用 postUpdateUI 会再由 mainHandler 执行
                         postUpdateUI(batchText);
                     }
 
                     @Override
                     public void onBlockStart(String blockName) {
-                        // 完成上一个区块的处理
                         if (blockStats.containsKey(currentBlock)) {
                             postBlockUpdate(currentBlock);
                         }
-
-                        // 开始新区块
                         currentBlock = blockName;
                         CompatUtils.mapPutIfAbsent(blockStats, currentBlock, new BlockStatistics());
                     }
@@ -128,7 +138,7 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
                         // 处理最后一个区块
                         postBlockUpdate(currentBlock);
 
-                        // 计算总体统计
+                        // 计算总体统计（从后台收集的 blockStats）
                         calculateOverallStatistics();
 
                         mainHandler.post(() -> {
@@ -151,6 +161,7 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
                 }
         );
 
+        // 在后台线程执行处理（已经在 executor 中）
         processor.process();
     }
 
@@ -186,12 +197,15 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
 
     @SuppressLint("SetTextI18n")
     private void updateUI(String batchLines) {
-        if (batchLines.isEmpty()) return;
+        if (batchLines == null || batchLines.isEmpty()) return;
 
+        // 只显示最后一行作为预览，避免反复解析整个批次
         String[] lines = batchLines.split("\n");
         String lastLine = lines[lines.length - 1];
 
+        // 仅把最必要的 UI 操作放到主线程
         textView.setText(CompatUtils.fromHtml(lastLine));
+        // textView2 和 progress 的更新由节流逻辑控制并可能已更新，这里可安全覆盖一次即时值
         textView3.setText(lastLine.replace("&#x", " "));
         textView5.setVisibility(View.GONE);
     }
@@ -210,7 +224,7 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
                 blockName, grade, stats.valid, stats.total, percentage));
     }
 
-    @SuppressLint("DefaultLocale")
+    @SuppressLint({"DefaultLocale", "SetTextI18n"})
     private void updateFinalStatus() {
         if (textView == null) return;
 
@@ -263,10 +277,6 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
         Grade(double threshold, String symbol) {
             this.threshold = threshold;
             this.symbol = symbol;
-        }
-
-        public String getSymbol() {
-            return symbol;
         }
 
         public static String fromScore(double score) {

@@ -7,10 +7,10 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId "top.rainysummer.unihantest"
+        applicationId "top.rainysummer.unicodetest"
         minSdkVersion 23
         targetSdkVersion 30
-        versionCode 1600
+        versionCode 1630
         versionName "17.0 beta"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

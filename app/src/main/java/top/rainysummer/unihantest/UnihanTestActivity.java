@@ -1,4 +1,3 @@
-// UnihanTestActivity.java (重构后)
 package top.rainysummer.unihantest;
 
 public class UnihanTestActivity extends BaseUnicodeTestActivity {
