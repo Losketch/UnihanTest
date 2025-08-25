@@ -14,4 +14,25 @@
     <color name="secondary_dark">#FF388E3C</color>
     <color name="accent_color">#FFFF9800</color>
     <color name="button_outline_stroke">#FF2196F3</color>
+
+    <!-- Material 3 色彩系统 -->
+    <color name="md_theme_light_primary">#6750A4</color>
+    <color name="md_theme_light_on_primary">#FFFFFF</color>
+    <color name="md_theme_light_primary_container">#EADDFF</color>
+    <color name="md_theme_light_on_primary_container">#21005D</color>
+
+    <color name="md_theme_light_secondary">#625B71</color>
+    <color name="md_theme_light_on_secondary">#FFFFFF</color>
+    <color name="md_theme_light_secondary_container">#E8DEF8</color>
+    <color name="md_theme_light_on_secondary_container">#1D192B</color>
+
+    <color name="md_theme_light_outline">#79747E</color>
+    <color name="md_theme_light_surface">#FFFBFE</color>
+    <color name="md_theme_light_on_surface">#1C1B1F</color>
+
+    <!-- 状态层颜色 -->
+    <color name="md_theme_light_primary_8">#146750A4</color>
+    <color name="md_theme_light_primary_12">#1F6750A4</color>
+    <color name="md_theme_light_on_surface_8">#141C1B1F</color>
+    <color name="md_theme_light_on_surface_12">#1F1C1B1F</color>
 </resources>
