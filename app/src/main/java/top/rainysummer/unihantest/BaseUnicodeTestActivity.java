@@ -26,7 +26,7 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
 
     private final AtomicInteger pendingBatchCounter = new AtomicInteger(0);
     private volatile long lastUiUpdateMillis = 0;
-    private static final int UI_UPDATE_THROTTLE_MS = 200; // 每200ms 至多一次 UI 更新
+    private static final int UI_UPDATE_THROTTLE_MS = 80; // 每 ms 至多一次 UI 更新
     private static final int UI_BATCH_THRESHOLD = 5; // 每处理 5 批 或达到时间间隔则更新 UI
 
     // 使用原子类型确保线程安全
@@ -146,6 +146,7 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
                             progressBar.setMax(totalLines);
                             progressBar.setProgress(totalLines);
                             textView3.setVisibility(View.GONE);
+                            textView4.setText(progressBar.getMax() + " / " + progressBar.getMax());
                             updateFinalStatus();
                         });
                     }
