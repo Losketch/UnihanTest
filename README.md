@@ -1,7 +1,7 @@
 <div align="center">
 
 # UnihanTest
-<a href="https://github.com/Losketch/UnihanTest/releases/latestt">
+<a href="https://github.com/Losketch/UnihanTest/releases/latest">
   <img src="https://img.shields.io/github/downloads/Losketch/UnihanTest/total?style=for-the-badge" alt="Github Downloads">
 </a>
 <a href="https://github.com/Losketch/UnihanTest/stargazers">

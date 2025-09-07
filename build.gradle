@@ -19,6 +19,91 @@ allprojects {
     }
 }
 
-task clean(type: Delete) {
+
+tasks.register('downloadUnicodeData') {
+    description = 'Download Unicode data files'
+    group = 'unicode'
+
+    doLast {
+        def baseUrl = "https://unicode.org/Public/draft/ucd"
+        def files = ["UnicodeData.txt", "Scripts.txt", "ScriptExtensions.txt"]
+
+        def toolsDir = file('tools')
+        if (!toolsDir.exists()) {
+            toolsDir.mkdirs()
+        }
+
+        files.each { fileName ->
+            def url = "${baseUrl}/${fileName}"
+            def destFile = file("tools/${fileName}")
+
+            println "Downloading ${fileName}..."
+
+            try {
+                def connection = new URL(url).openConnection()
+                connection.setRequestProperty("User-Agent", "Mozilla/5.0")
+
+                destFile.withOutputStream { out ->
+                    connection.inputStream.withCloseable { input ->
+                        out << input
+                    }
+                }
+
+                println "✓ ${fileName} downloaded successfully"
+            } catch (Exception e) {
+                println "✗ Failed to download ${fileName}: ${e.message}"
+                throw new GradleException("Download failed for ${fileName}")
+            }
+        }
+
+        println "All Unicode data files downloaded successfully!"
+    }
+}
+
+tasks.register('generateUnicode', Exec) {
+    description = 'Generate Unicode.txt from downloaded data'
+    group = 'unicode'
+
+    dependsOn downloadUnicodeData
+
+    commandLine 'python', 'tools/unicode_extractor.py',
+            '-b', 'tools/Blocks.txt',
+            '-u', 'tools/UnicodeData.txt',
+            '-o', 'tools/output/Unicode.txt'
+
+    doFirst {
+        println "Generating Unicode.txt..."
+    }
+}
+
+tasks.register('generateUnihan', Exec) {
+    description = 'Generate Unihan.txt from downloaded data'
+    group = 'unicode'
+
+    dependsOn downloadUnicodeData
+
+    commandLine 'python', 'tools/unicode_extractor.py',
+            '-b', 'tools/Blocks.txt',
+            '--han-scripts', 'tools/Scripts.txt', 'tools/ScriptExtensions.txt',
+            '-o', 'tools/output/Unihan.txt'
+
+    doFirst {
+        println "Generating Unihan.txt..."
+    }
+}
+
+tasks.register('processUnicodeData') {
+    description = 'Download and process all Unicode data files'
+    group = 'unicode'
+
+    dependsOn generateUnicode, generateUnihan
+
+    doLast {
+        println "Unicode data processing completed!"
+    }
+}
+
+
+tasks.register('clean', Delete) {
     delete rootProject.buildDir
 }
