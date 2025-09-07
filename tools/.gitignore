@@ -1,0 +1,7 @@
+# Unicode Public ucd
+UnicodeData.txt
+Scripts.txt
+ScriptExtensions.txt
+
+# Output dir
+output

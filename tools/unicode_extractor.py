@@ -196,6 +196,11 @@ def main():
 
     args = parser.parse_args()
 
+    output_dir = os.path.dirname(args.output)
+    if output_dir and not os.path.exists(output_dir):
+        print(f"创建输出目录: {output_dir}")
+        os.makedirs(output_dir, exist_ok=True)
+
     exclude_blocks = set(args.exclude_blocks) if args.exclude_blocks else set()
     processor = UnicodeProcessor(args.blocks, exclude_blocks)
 
