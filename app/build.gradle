@@ -4,13 +4,12 @@ plugins {
 
 android {
     compileSdkVersion 36
-    buildToolsVersion "30.0.3"
     namespace 'top.rainysummer.unihantest'
 
     defaultConfig {
         applicationId "top.rainysummer.unicodetest"
         minSdkVersion 23
-        targetSdkVersion 30
+        targetSdkVersion 33
         versionCode 1630
         versionName "17.0 beta"
 
