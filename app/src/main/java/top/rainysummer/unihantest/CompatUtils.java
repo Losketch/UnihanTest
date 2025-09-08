@@ -11,13 +11,13 @@ public class CompatUtils {
     /**
      * 兼容各 API 的 Html.fromHtml 调用
      */
+    @SuppressWarnings("deprecation")
     public static Spanned fromHtml(String source) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             // API 24+ 可用重载
             return Html.fromHtml(source, Html.FROM_HTML_MODE_LEGACY);
         } else {
             // 低版本使用老接口
-            //noinspection deprecation
             return Html.fromHtml(source);
         }
     }
@@ -46,8 +46,6 @@ public class CompatUtils {
             // API<24 手动实现
             if (!map.containsKey(key)) {
                 map.put(key, value);
-            } else {
-                map.get(key);
             }
         }
     }

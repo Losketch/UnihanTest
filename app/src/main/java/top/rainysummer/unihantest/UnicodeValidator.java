@@ -2,7 +2,6 @@ package top.rainysummer.unihantest;
 
 import android.graphics.Paint;
 import android.text.Spanned;
-import android.os.Build;
 
 public class UnicodeValidator {
     private static final String SPECIAL_UNICODE = "&#x1F1E8&#x1F1F3";
@@ -16,12 +15,9 @@ public class UnicodeValidator {
             Spanned sp = CompatUtils.fromHtml(unicodeHtml);
             String parsed = sp.toString();
 
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
-                if (paint != null && !CompatUtils.hasGlyph(paint, parsed)) {
-                    return false;
-                }
-            } else {
-                if (SPECIAL_UNICODE.equals(unicodeHtml)) return true;
+            if (SPECIAL_UNICODE.equals(unicodeHtml)) return true;
+            if (paint != null && !CompatUtils.hasGlyph(paint, parsed)) {
+                return false;
             }
 
             if (containsZwj) {

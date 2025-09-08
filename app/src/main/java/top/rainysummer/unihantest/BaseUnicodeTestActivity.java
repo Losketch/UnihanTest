@@ -134,6 +134,7 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
                         CompatUtils.mapPutIfAbsent(blockStats, currentBlock, new BlockStatistics());
                     }
 
+                    @SuppressLint("SetTextI18n")
                     @Override
                     public void onComplete(int totalLines) {
                         // 处理最后一个区块

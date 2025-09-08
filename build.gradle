@@ -6,6 +6,7 @@ buildscript {
     }
     dependencies {
         classpath "com.android.tools.build:gradle:8.12.1"
+        classpath "de.undercouch:gradle-download-task:5.6.0"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -31,50 +32,22 @@ allprojects {
 }
 
 
-tasks.register('downloadUnicodeData') {
-    description = 'Download Unicode data files'
-    group = 'unicode'
+def unicodeBaseUrl = "https://unicode.org/Public/draft/ucd"
+def unicodeFiles   = ["UnicodeData.txt", "Scripts.txt", "ScriptExtensions.txt"]
 
-    doLast {
-        def baseUrl = "https://unicode.org/Public/draft/ucd"
-        def files = ["UnicodeData.txt", "Scripts.txt", "ScriptExtensions.txt"]
+tasks.register("downloadUnicodeData", de.undercouch.gradle.tasks.download.Download) {
+    description = "Download Unicode data files"
+    group       = "unicode"
 
-        def toolsDir = file('tools')
-        if (!toolsDir.exists()) {
-            toolsDir.mkdirs()
-        }
-
-        files.each { fileName ->
-            def url = "${baseUrl}/${fileName}"
-            def destFile = file("tools/${fileName}")
-
-            println "Downloading ${fileName}..."
-
-            try {
-                def connection = new URL(url).openConnection()
-                connection.setRequestProperty("User-Agent", "Mozilla/5.0")
-
-                destFile.withOutputStream { out ->
-                    connection.inputStream.withCloseable { input ->
-                        out << input
-                    }
-                }
-
-                println "✓ ${fileName} downloaded successfully"
-            } catch (Exception e) {
-                println "✗ Failed to download ${fileName}: ${e.message}"
-                throw new GradleException("Download failed for ${fileName}")
-            }
-        }
-
-        println "All Unicode data files downloaded successfully!"
-    }
+    src unicodeFiles.collect { "${unicodeBaseUrl}/${it}" }
+    dest file("$projectDir/tools")
+    overwrite false
+    quiet false
 }
 
 tasks.register('generateUnicode', Exec) {
     description = 'Generate Unicode.txt from downloaded data'
     group = 'unicode'
-
     dependsOn downloadUnicodeData
 
     commandLine 'python', 'tools/unicode_extractor.py',
@@ -82,15 +55,12 @@ tasks.register('generateUnicode', Exec) {
             '-u', 'tools/UnicodeData.txt',
             '-o', 'tools/output/Unicode.txt'
 
-    doFirst {
-        println "Generating Unicode.txt..."
-    }
+    doFirst { println "Generating Unicode.txt..." }
 }
 
 tasks.register('generateUnihan', Exec) {
     description = 'Generate Unihan.txt from downloaded data'
     group = 'unicode'
-
     dependsOn downloadUnicodeData
 
     commandLine 'python', 'tools/unicode_extractor.py',
@@ -98,23 +68,18 @@ tasks.register('generateUnihan', Exec) {
             '--han-scripts', 'tools/Scripts.txt', 'tools/ScriptExtensions.txt',
             '-o', 'tools/output/Unihan.txt'
 
-    doFirst {
-        println "Generating Unihan.txt..."
-    }
+    doFirst { println "Generating Unihan.txt..." }
 }
 
 tasks.register('processUnicodeData') {
     description = 'Download and process all Unicode data files'
     group = 'unicode'
-
     dependsOn generateUnicode, generateUnihan
 
-    doLast {
-        println "Unicode data processing completed!"
-    }
+    doLast { println "Unicode data processing completed!" }
 }
 
 
 tasks.register('clean', Delete) {
-    delete rootProject.buildDir
+    delete rootProject.layout.buildDirectory
 }
