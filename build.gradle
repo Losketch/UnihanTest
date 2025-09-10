@@ -32,7 +32,8 @@ allprojects {
 }
 
 
-def unicodeBaseUrl = "https://unicode.org/Public/draft/ucd"
+def unicodeVersion = "17.0.0"
+def unicodeBaseUrl = "https://unicode.org/Public/${unicodeVersion}/ucd"
 def unicodeFiles   = ["UnicodeData.txt", "Scripts.txt", "ScriptExtensions.txt"]
 
 tasks.register("downloadUnicodeData", de.undercouch.gradle.tasks.download.Download) {

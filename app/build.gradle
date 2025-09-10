@@ -6,20 +6,28 @@ android {
     compileSdkVersion 36
     namespace 'top.rainysummer.unihantest'
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId "top.rainysummer.unicodetest"
         minSdkVersion 23
         targetSdkVersion 33
-        versionCode 1630
-        versionName "17.0 beta"
+        versionCode 1700
+        versionName "17.0.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            debuggable false
+            minifyEnabled true
+            shrinkResources true
+
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "boolean", "IS_DEBUG", "false"
         }
     }
     compileOptions {

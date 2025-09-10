@@ -8,32 +8,27 @@
     <string name="btn_unihan_test">🇨🇳 Unihan 测试</string>
     <string name="btn_unicode_test">🌍 Unicode 测试</string>
     <string name="btn_about">ℹ️ 关于应用</string>
-    <string name="unicode_version">基于 Unicode 17.0 beta</string>
+    <string name="unicode_version">基于 Unicode 17.0</string>
     
     <!-- About Activity -->
     <string name="about_app_name">Unicode 字体支持测试</string>
-    <string name="about_version">版本 17.0 beta</string>
+    <string name="about_version">版本 17.0</string>
     <string name="about_author">👨‍💻 作者：Losketch</string>
     <string name="about_description">这是一个用于测试当前系统字体环境对 Unicode 字符显示支持的应用。通过测试 Unihan 字符集和完整 Unicode 基本字形，帮助用户了解设备的字体支持情况。</string>
     <string name="btn_github">🔗 GitHub 开源地址</string>
     <string name="btn_noto_font">📁 下载 Noto 字体</string>
     <string name="btn_unicode_font">📦 全Unicode 17.0 字体获取</string>
     <string name="btn_back">⬅️ 返回主页</string>
-    <string name="about_copyright">© 2024-2025 Losketch\n基于 Unicode 17.0 beta</string>
+    <string name="about_copyright">© 2024-2025 Losketch\n基于 Unicode 17.0</string>
     
     <!-- Unicode Test Activity -->
     <string name="unicode_test_title">Unicode 支持测试</string>
-    <string name="test_progress_format">%1$d / %2$d =</string>
-    <string name="test_percentage_format">%1$.1f%%</string>
     
     <!-- Unihan Test Activity -->
     <string name="unihan_test_title">Unihan 支持测试</string>
     
     <!-- Test Results -->
     <string name="overall_result_format">总体结果: %1$s - %2$d/%3$d (%4$.2f%%)</string>
-    <string name="block_result_format">%1$s:\n %2$s - %3$d/%4$d (%5$.2f%%)</string>
-    <string name="progress_format">%1$d / %2$d</string>
-    <string name="percentage_format">%.3f%%</string>
     
     <!-- Error messages -->
     <string name="error_read_file_fail">读取 %1$s 文件失败：%2$s</string>
