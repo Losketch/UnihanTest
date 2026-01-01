@@ -24,6 +24,7 @@
     <string name="unicode_test_title">Unicode Support Test</string>
     <string name="test_progress_format">%1$d / %2$d =</string>
     <string name="test_percentage_format">%1$.1f%%</string>
+    <string name="checkbox_filter_perfect">Hide 100% blocks</string>
     
     <!-- Unihan Test Activity -->
     <string name="unihan_test_title">Unihan Support Test</string>

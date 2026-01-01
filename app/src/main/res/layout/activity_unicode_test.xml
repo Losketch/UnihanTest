@@ -110,6 +110,14 @@
                 android:padding="8dp" />
         </ScrollView>
 
+        <CheckBox
+            android:id="@+id/checkboxFilterPerfect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="0dp"
+            android:text="@string/checkbox_filter_perfect" />
+
         <TextView
             android:id="@+id/txtV"
             android:layout_width="wrap_content"

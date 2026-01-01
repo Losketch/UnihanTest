@@ -23,6 +23,7 @@
     
     <!-- Unicode Test Activity -->
     <string name="unicode_test_title">Unicode 支持测试</string>
+    <string name="checkbox_filter_perfect">隐藏 100% 区块</string>
     
     <!-- Unihan Test Activity -->
     <string name="unihan_test_title">Unihan 支持测试</string>

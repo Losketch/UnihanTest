@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.ScrollView;
@@ -45,6 +46,7 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private LinearLayout blockResultsContainer;
     private ScrollView scrollView;
+    private CheckBox checkboxFilterPerfect;
 
     private Handler mainHandler;
     private ExecutorService executorService;
@@ -77,6 +79,13 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         blockResultsContainer = findViewById(R.id.blockResultsContainer);
         scrollView = findViewById(R.id.scrollView);
+        checkboxFilterPerfect = findViewById(R.id.checkboxFilterPerfect);
+
+        if (checkboxFilterPerfect != null) {
+            checkboxFilterPerfect.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                refreshBlockDisplay();
+            });
+        }
     }
 
     private void processUnicodeFile() {
@@ -218,11 +227,22 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
         BlockStatistics stats = blockStats.get(blockName);
         if (stats == null) return;
 
+        double percentage = stats.total > 0 ? ((double) stats.valid / stats.total) * 100 : 0;
+
+        boolean shouldHide = checkboxFilterPerfect != null
+                && checkboxFilterPerfect.isChecked()
+                && Math.abs(percentage - 100.0) < EPSILON;
+
         TextView blockView = BlockUIManager.findOrCreateBlockView(
                 this, blockResultsContainer, scrollView, blockName);
-        double percentage = stats.total > 0 ? ((double) stats.valid / stats.total) * 100 : 0;
-        String grade = Grade.fromScore(percentage);
 
+        if (shouldHide) {
+            blockView.setVisibility(View.GONE);
+            return;
+        }
+
+        blockView.setVisibility(View.VISIBLE);
+        String grade = Grade.fromScore(percentage);
         blockView.setText(getString(R.string.block_result_format,
                 blockName, grade, stats.valid, stats.total, percentage));
     }
@@ -248,6 +268,14 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
         TextView overallResultView = BlockUIManager.createOverallResultView(
                 this, grade, finalValid, finalTotal, percentage);
         blockResultsContainer.addView(overallResultView, 0);
+    }
+
+    private void refreshBlockDisplay() {
+        if (blockStats.isEmpty()) return;
+
+        for (String blockName : blockStats.keySet()) {
+            updateBlockUI(blockName);
+        }
     }
 
     @Override

@@ -14,8 +14,8 @@ android {
         applicationId "top.rainysummer.unicodetest"
         minSdkVersion 23
         targetSdkVersion 33
-        versionCode 1700
-        versionName "17.0.0"
+        versionCode 1701
+        versionName "17.0.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
