@@ -15,11 +15,7 @@ import java.util.Set;
 
 public class UnicodeDataCache {
     private static final Set<String> FILTER_CATEGORIES = new HashSet<>(java.util.Arrays.asList(
-            "Cc", "Cf", "Co", "Zs", "Zl", "Zp", "Mn", "Cs"
-    ));
-
-    private static final Set<String> EXCLUDED_BLOCKS = new HashSet<>(java.util.Arrays.asList(
-            "High Surrogates", "High Private Use Surrogates", "Low Surrogates", "Private Use Area"
+            "Cc", "Cf", "Co", "Zs", "Zl", "Zp", "Mn", "Cs", "Cn"
     ));
 
     private static volatile List<String> cachedUnicodeLines = null;
@@ -82,7 +78,6 @@ public class UnicodeDataCache {
                 if (rangeStr.isEmpty()) continue;
 
                 String name = parts[1].trim();
-                if (EXCLUDED_BLOCKS.contains(name)) continue;
 
                 try {
                     CodeBlock block = parseCodeBlock(rangeStr, name);
