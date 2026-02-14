@@ -15,15 +15,25 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
 
     private static final double EPSILON = 0.0001;
+
+    private static final ExecutorService sharedExecutor = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "UnicodeProcessor");
+        t.setDaemon(true);
+        return t;
+    });
+
+    private static volatile Future<?> currentTask = null;
 
     private final AtomicInteger pendingBatchCounter = new AtomicInteger(0);
     private volatile long lastUiUpdateMillis = 0;
@@ -34,7 +44,7 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
     private final AtomicInteger totalValidCount = new AtomicInteger(0);
     private final AtomicInteger totalProcessedCount = new AtomicInteger(0);
 
-    private final Map<String, BlockStatistics> blockStats = new HashMap<>();
+    private final Map<String, BlockStatistics> blockStats = new ConcurrentHashMap<>();
     private String currentBlock = "Unknown";
 
     private Paint paint;
@@ -49,7 +59,13 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
     private CheckBox checkboxFilterPerfect;
 
     private Handler mainHandler;
-    private ExecutorService executorService;
+    private volatile boolean refreshPending = false;
+
+    protected enum FileMode {
+        PREPROCESSED,
+        RAW_UNICODE_DATA,
+        RAW_HAN_SCRIPTS
+    }
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -60,10 +76,34 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
 
         paint = new Paint();
         mainHandler = new Handler(Looper.getMainLooper());
-        executorService = Executors.newSingleThreadExecutor();
 
         progressBar.setMax(1000);
-        executorService.execute(this::processUnicodeFile);
+        blockStats.clear();
+        currentBlock = "Unknown";
+        totalValidCount.set(0);
+        totalProcessedCount.set(0);
+        pendingBatchCounter.set(0);
+
+        if (currentTask != null) {
+            currentTask.cancel(true);
+        }
+        currentTask = sharedExecutor.submit(this::processUnicodeFile);
+    }
+
+    protected FileMode getFileMode() {
+        return FileMode.PREPROCESSED;
+    }
+
+    protected String getBlocksFileName() {
+        return "Blocks.txt";
+    }
+
+    protected String getSecondaryFileName() {
+        return null;
+    }
+
+    protected String getTertiaryFileName() {
+        return null;
     }
 
     // 抽象方法，由子类实现
@@ -89,13 +129,76 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
     }
 
     private void processUnicodeFile() {
-        // 在工作线程中执行，传入复用的 paint 到处理器回调里以减少重复创建
+        if (Thread.currentThread().isInterrupted()) {
+            return;
+        }
+
+        final FileMode mode = getFileMode();
+
+        if (mode == FileMode.PREPROCESSED) {
+            processPreprocessedFile();
+        } else if (mode == FileMode.RAW_UNICODE_DATA) {
+            processRawUnicodeDataFile();
+        } else if (mode == FileMode.RAW_HAN_SCRIPTS) {
+            processRawHanScriptsFile();
+        }
+    }
+
+    private void processPreprocessedFile() {
         final Paint workerPaint = paint == null ? new Paint() : paint;
         UnicodeFileProcessor processor = new UnicodeFileProcessor(
                 getApplicationContext(),
                 getResources().getAssets(),
                 getAssetFileName(),
-                new UnicodeFileProcessor.ProcessCallback() {
+                createProcessCallback(workerPaint)
+        );
+        processor.process();
+    }
+
+    private void processRawUnicodeDataFile() {
+        final Paint workerPaint = paint == null ? new Paint() : paint;
+        final UnicodeFileProcessor.ProcessCallback callback = createProcessCallback(workerPaint);
+        UnicodeRawFileProcessor processor = new UnicodeRawFileProcessor(
+                getApplicationContext(),
+                getResources().getAssets(),
+                callback
+        );
+
+        try {
+            List<String> lines = UnicodeDataCache.getUnicodeDataLines(
+                    App.getInstance(),
+                    App.getInstance().getAppAssetManager()
+            );
+            callback.onLineCountUpdate(lines.size());
+            processor.processFromUnicodeDataLines(lines);
+        } catch (Exception e) {
+            callback.onError(getString(R.string.error_read_file_fail, "UnicodeData.txt", e.getMessage()));
+        }
+    }
+
+    private void processRawHanScriptsFile() {
+        final Paint workerPaint = paint == null ? new Paint() : paint;
+        final UnicodeFileProcessor.ProcessCallback callback = createProcessCallback(workerPaint);
+        UnicodeRawFileProcessor processor = new UnicodeRawFileProcessor(
+                getApplicationContext(),
+                App.getInstance().getAppAssetManager(),
+                callback
+        );
+
+        try {
+            List<String> lines = UnicodeDataCache.getHanScriptsLines(
+                    App.getInstance(),
+                    App.getInstance().getAppAssetManager()
+            );
+            callback.onLineCountUpdate(lines.size());
+            processor.processFromHanScriptsLines(lines);
+        } catch (Exception e) {
+            callback.onError(getString(R.string.error_read_file_fail, "Scripts.txt", e.getMessage()));
+        }
+    }
+
+    private UnicodeFileProcessor.ProcessCallback createProcessCallback(final Paint workerPaint) {
+        return new UnicodeFileProcessor.ProcessCallback() {
                     @SuppressLint("SetTextI18n")
                     @Override
                     public void onProgress(String formattedUnicode, int validCount, int totalCount) {
@@ -140,7 +243,7 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
                             postBlockUpdate(currentBlock);
                         }
                         currentBlock = blockName;
-                        CompatUtils.mapPutIfAbsent(blockStats, currentBlock, new BlockStatistics());
+                        blockStats.computeIfAbsent(currentBlock, k -> new BlockStatistics());
                     }
 
                     @SuppressLint("SetTextI18n")
@@ -170,11 +273,7 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
                     public void onLineCountUpdate(int lineCount) {
                         mainHandler.post(() -> progressBar.setMax(lineCount));
                     }
-                }
-        );
-
-        // 在后台线程执行处理（已经在 executor 中）
-        processor.process();
+                };
     }
 
     // 计算所有区块的总体统计
@@ -273,16 +372,19 @@ public abstract class BaseUnicodeTestActivity extends AppCompatActivity {
     private void refreshBlockDisplay() {
         if (blockStats.isEmpty()) return;
 
-        for (String blockName : blockStats.keySet()) {
-            updateBlockUI(blockName);
-        }
+        if (refreshPending) return;
+        refreshPending = true;
+
+        mainHandler.post(() -> {
+            for (String blockName : blockStats.keySet()) {
+                updateBlockUI(blockName);
+            }
+            refreshPending = false;
+        });
     }
 
     @Override
     protected void onDestroy() {
-        if (executorService != null && !executorService.isShutdown()) {
-            executorService.shutdownNow();
-        }
         super.onDestroy();
     }
 

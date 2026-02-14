@@ -34,52 +34,22 @@ allprojects {
 
 def unicodeVersion = "17.0.0"
 def unicodeBaseUrl = "https://unicode.org/Public/${unicodeVersion}/ucd"
-def unicodeFiles   = ["UnicodeData.txt", "Scripts.txt", "ScriptExtensions.txt"]
+def unicodeFiles = [
+    "Blocks.txt",
+    "UnicodeData.txt",
+    "Scripts.txt",
+    "ScriptExtensions.txt"
+]
 
 tasks.register("downloadUnicodeData", de.undercouch.gradle.tasks.download.Download) {
-    description = "Download Unicode data files"
+    description = "Download Unicode data files for Java layer processing"
     group       = "unicode"
 
     src unicodeFiles.collect { "${unicodeBaseUrl}/${it}" }
-    dest file("$projectDir/tools")
+    dest file("$projectDir/app/src/main/assets")
     overwrite false
     quiet false
 }
-
-tasks.register('generateUnicode', Exec) {
-    description = 'Generate Unicode.txt from downloaded data'
-    group = 'unicode'
-    dependsOn downloadUnicodeData
-
-    commandLine 'python', 'tools/unicode_extractor.py',
-            '-b', 'tools/Blocks.txt',
-            '-u', 'tools/UnicodeData.txt',
-            '-o', 'tools/output/Unicode.txt'
-
-    doFirst { println "Generating Unicode.txt..." }
-}
-
-tasks.register('generateUnihan', Exec) {
-    description = 'Generate Unihan.txt from downloaded data'
-    group = 'unicode'
-    dependsOn downloadUnicodeData
-
-    commandLine 'python', 'tools/unicode_extractor.py',
-            '-b', 'tools/Blocks.txt',
-            '--han-scripts', 'tools/Scripts.txt', 'tools/ScriptExtensions.txt',
-            '-o', 'tools/output/Unihan.txt'
-
-    doFirst { println "Generating Unihan.txt..." }
-}
-
-tasks.register('processUnicodeData') {
-    description = 'Download and process all Unicode data files'
-    group = 'unicode'
-    dependsOn generateUnicode, generateUnihan
-
-    doLast { println "Unicode data processing completed!" }
-}
-
 
 tasks.register('clean', Delete) {
     delete rootProject.layout.buildDirectory

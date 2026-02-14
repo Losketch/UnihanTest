@@ -50,6 +50,9 @@ public class UnicodeFileProcessor {
 
             String line;
             while ((line = bufferedReader.readLine()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    return lineCount;
+                }
                 line = line.trim();
                 if (line.isEmpty() || line.startsWith("#")) {
                     continue;
@@ -71,6 +74,9 @@ public class UnicodeFileProcessor {
             StringBuilder batchBuilder = new StringBuilder();
 
             while ((line = bufferedReader.readLine()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    return;
+                }
                 line = line.trim();
                 if (line.isEmpty()) {
                     continue;

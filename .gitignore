@@ -5,6 +5,12 @@
 output-metadata.json
 app-release.dm
 
+# Unicode Public ucd
+Blocks.txt
+UnicodeData.txt
+Scripts.txt
+ScriptExtensions.txt
+
 # Files for the ART/Dalvik VM
 *.dex
 

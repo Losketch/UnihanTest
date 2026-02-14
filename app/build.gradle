@@ -34,12 +34,6 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
-    sourceSets {
-        main {
-            assets.srcDirs += ['../tools/output']
-        }
-    }
 }
 
 dependencies {
@@ -52,4 +46,4 @@ dependencies {
 }
 
 
-preBuild.dependsOn ':processUnicodeData'
+preBuild.dependsOn ':downloadUnicodeData'
