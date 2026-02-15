@@ -20,7 +20,7 @@ impl FontDetector {
     fn new() -> Self {
         let _ = android_logger::init_once(
             android_logger::Config::default()
-                .with_max_level(log::LevelFilter::Info)
+                .with_max_level(log::LevelFilter::Debug)
         );
 
         info!("Initializing FontDetector");
@@ -65,17 +65,30 @@ fn collect_effective_fonts() -> HashSet<String> {
     for dir in font_xml_dirs {
         let base = Path::new(dir);
         if !base.exists() {
+            log::debug!("Directory doesn't exist: {}", dir);
             continue;
         }
 
         for file in font_xml_files {
             let path = base.join(file);
             if path.exists() {
-                if let Ok(fonts) = parse_fonts_xml(&path) {
-                    result.extend(fonts);
+                log::info!("Parsing fonts config: {:?}", path);
+                match parse_fonts_xml(&path) {
+                    Ok(fonts) => {
+                        log::info!("Found {} fonts in {:?}", fonts.len(), path);
+                        result.extend(fonts);
+                    }
+                    Err(e) => {
+                        log::warn!("Failed to parse {:?}: {}", path, e);
+                    }
                 }
             }
         }
+    }
+
+    log::info!("Total effective fonts collected: {}", result.len());
+    if result.is_empty() {
+        log::warn!("WARNING: No effective fonts found from XML!");
     }
 
     result
@@ -149,6 +162,10 @@ fn scan_system_unicode(effective_fonts: &HashSet<String>) -> HashSet<u32> {
         return result;
     }
 
+    let mut skipped_effective = 0;
+    let mut skipped_cmap = 0;
+    let mut included = 0;
+
     if let Ok(entries) = fs::read_dir(font_dir) {
         for entry in entries.flatten() {
             let path = entry.path();
@@ -167,6 +184,8 @@ fn scan_system_unicode(effective_fonts: &HashSet<String>) -> HashSet<u32> {
             };
 
             if !effective_fonts.is_empty() && !effective_fonts.contains(file_name) {
+                skipped_effective += 1;
+                log::debug!("Skipping font {}: not in effective fonts list", file_name);
                 continue;
             }
 
@@ -174,23 +193,30 @@ fn scan_system_unicode(effective_fonts: &HashSet<String>) -> HashSet<u32> {
                 if let Ok(face) = Face::parse(&data, 0) {
                     if let Some(cmap) = face.tables().cmap {
                         let mut local = HashSet::new();
+                        let mut has_supplementary = false;
                         for sub in cmap.subtables {
                             sub.codepoints(|cp| {
+                                if cp >= 0x10000 {
+                                    has_supplementary = true;
+                                }
                                 local.insert(cp);
                             });
                         }
-                        if local.len() > 65535 {
+                        if local.len() > 131070 {
+                            skipped_cmap += 1;
                             log::warn!(
-                                "Skipping font {}: cmap has {} mappings (> 65535)",
+                                "Skipping font {}: cmap has {} mappings (> 131070)",
                                 file_name,
                                 local.len()
                             );
                             continue;
                         }
+                        included += 1;
                         log::info!(
-                            "Font {}: {} mappings",
+                            "Including font {}: {} mappings, has_supplementary: {}",
                             file_name,
-                            local.len()
+                            local.len(),
+                            has_supplementary
                         );
                         result.extend(local);
                     }
@@ -199,10 +225,17 @@ fn scan_system_unicode(effective_fonts: &HashSet<String>) -> HashSet<u32> {
         }
     }
 
-    log::info!(
-        "Total system unicode: {}",
-        result.len()
-    );
+    let count_basic = result.iter().filter(|&&cp| cp < 0x10000).count();
+    let count_supplementary = result.iter().filter(|&&cp| cp >= 0x10000).count();
+
+    log::info!("Font statistics:");
+    log::info!("  Skipped (not in effective list): {}", skipped_effective);
+    log::info!("  Skipped (cmap too big): {}", skipped_cmap);
+    log::info!("  Included: {}", included);
+    log::info!("Total system unicode: {}", result.len());
+    log::info!("  Basic plane (< 0x10000): {}", count_basic);
+    log::info!("  Supplementary plane (>= 0x10000): {}", count_supplementary);
+
     result
 }
 
