@@ -32,7 +32,8 @@ allprojects {
 }
 
 
-def unicodeVersion = "17.0.0"
+def unicodeVersion = "17.0.0" //latest
+def unicodeDraftBaseUrl = "https://unicode.org/Public/draft/ucd"
 def unicodeBaseUrl = "https://unicode.org/Public/${unicodeVersion}/ucd"
 def unicodeFiles = [
     "Blocks.txt",
@@ -41,14 +42,44 @@ def unicodeFiles = [
     "ScriptExtensions.txt"
 ]
 
-tasks.register("downloadUnicodeData", de.undercouch.gradle.tasks.download.Download) {
+// ./gradlew downloadUnicodeData -Poverwrite
+tasks.register("downloadUnicodeData") {
     description = "Download Unicode data files for Java layer processing"
     group       = "unicode"
 
-    src unicodeFiles.collect { "${unicodeBaseUrl}/${it}" }
-    dest file("$projectDir/app/src/main/assets")
-    overwrite false
-    quiet false
+    doLast {
+        def destDir = file("$projectDir/app/src/main/assets")
+        destDir.mkdirs()
+
+        unicodeFiles.each { fileName ->
+            def destFile = new File(destDir, fileName)
+            
+            if (destFile.exists() && !project.hasProperty('overwrite')) {
+                println "File ${fileName} already exists, skipping download"
+                return
+            }
+
+            def downloaded = false
+            
+            try {
+                println "Trying to download ${fileName} from draft URL..."
+                def draftUrl = "${unicodeDraftBaseUrl}/${fileName}"
+                ant.get(src: draftUrl, dest: destFile, verbose: true)
+                println "Successfully downloaded ${fileName} from draft URL"
+                downloaded = true
+            } catch (Exception e) {
+                println "Failed to download ${fileName} from draft URL: ${e.message}"
+                destFile.delete()
+            }
+
+            if (!downloaded) {
+                println "Falling back to ${unicodeVersion} version..."
+                def versionUrl = "${unicodeBaseUrl}/${fileName}"
+                ant.get(src: versionUrl, dest: destFile, verbose: true)
+                println "Successfully downloaded ${fileName} from ${unicodeVersion} URL"
+            }
+        }
+    }
 }
 
 tasks.register('clean', Delete) {

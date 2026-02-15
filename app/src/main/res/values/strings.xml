@@ -7,18 +7,18 @@
     <string name="btn_unihan_test">🇨🇳 Unihan Test</string>
     <string name="btn_unicode_test">🌍 Unicode Test</string>
     <string name="btn_about">ℹ️ About App</string>
-    <string name="unicode_version">Based on Unicode 17.0</string>
+    <string name="unicode_version">Based on Unicode 18.0 Alpha</string>
     
     <!-- About Activity -->
     <string name="about_app_name">Unicode Font Support Test</string>
-    <string name="about_version">Version 17.0</string>
+    <string name="about_version">Version 18.0 Alpha</string>
     <string name="about_author">👨‍💻 Author: Losketch</string>
     <string name="about_description">This is an application for testing the current system font environment\'s support for Unicode character display. By testing the Unihan character set and complete Unicode basic glyphs, it helps users understand their device\'s font support.</string>
     <string name="btn_github">🔗 GitHub Repository</string>
     <string name="btn_noto_font">📁 Download Noto Fonts</string>
     <string name="btn_unicode_font">📦 Full Unicode 17.0 Font Download</string>
     <string name="btn_back">⬅️ Back to Home</string>
-    <string name="about_copyright">© 2024-2025 Losketch\nBased on Unicode 17.0</string>
+    <string name="about_copyright">© 2024-2026 Losketch\nBased on Unicode 18.0 Alpha</string>
     
     <!-- Unicode Test Activity -->
     <string name="unicode_test_title">Unicode Support Test</string>
