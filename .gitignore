@@ -4,6 +4,8 @@
 *.aab
 output-metadata.json
 app-release.dm
+target
+jniLibs
 
 # Unicode Public ucd
 Blocks.txt

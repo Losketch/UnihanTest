@@ -45,5 +45,54 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
 }
 
+task buildRustLibs {
+    def rustDir = file('src/main/rust')
+    def targets = [
+        'arm64-v8a': 'aarch64-linux-android',
+        'armeabi-v7a': 'armv7-linux-androideabi',
+        'x86_64': 'x86_64-linux-android',
+        'x86': 'i686-linux-android'
+    ]
+    def jniLibsDir = file('src/main/jniLibs')
+    
+    targets.each { abi, target ->
+        dependsOn "buildRustFor_${target}"
+    }
+}
 
-preBuild.dependsOn ':downloadUnicodeData'
+def rustDir = file('src/main/rust')
+def targets = [
+    'arm64-v8a': 'aarch64-linux-android',
+    'armeabi-v7a': 'armv7-linux-androideabi',
+    'x86_64': 'x86_64-linux-android',
+    'x86': 'i686-linux-android'
+]
+def jniLibsDir = file('src/main/jniLibs')
+
+targets.each { abi, target ->
+    task "buildRustFor_${target}"(type: Exec) {
+        def sourceLib = file("${rustDir}/target/${target}/release/libfont_detector.so")
+        def destLib = file("${jniLibsDir}/${abi}/libfont_detector.so")
+        def rustSrc = fileTree(rustDir) {
+            include 'src/**/*.rs'
+            include 'Cargo.toml'
+        }
+        
+        workingDir rustDir
+        commandLine 'cargo', 'ndk', '-t', target, 'build', '--release', '--lib'
+        
+        inputs.files rustSrc
+        outputs.file sourceLib
+        
+        doLast {
+            def destDir = file("${jniLibsDir}/${abi}")
+            destDir.mkdirs()
+            copy {
+                from sourceLib
+                into destDir
+            }
+        }
+    }
+}
+
+preBuild.dependsOn ':downloadUnicodeData', 'buildRustLibs'

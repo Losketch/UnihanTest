@@ -23,16 +23,30 @@ public class CompatUtils {
     }
 
     /**
-     * 兼容各 API 的 Paint.hasGlyph 调用
+     * Rust 实现的 hasGlyph 检测
      */
     public static boolean hasGlyph(Paint paint, String text) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // API 23+ 支持
-            return paint.hasGlyph(text);
-        } else {
-            // API < 23，直接返回 true，跳过检测
+        if (text == null || text.isEmpty()) {
             return true;
         }
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (Character.isHighSurrogate(c) && i + 1 < text.length()) {
+                char low = text.charAt(i + 1);
+                if (Character.isLowSurrogate(low)) {
+                    int codepoint = Character.toCodePoint(c, low);
+                    if (!FontDetector.hasGlyph(codepoint)) {
+                        return false;
+                    }
+                    i++;
+                }
+            } else {
+                if (!FontDetector.hasGlyph(c)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

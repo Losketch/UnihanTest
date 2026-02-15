@@ -13,6 +13,27 @@ public class App extends Application {
         instance = this;
         assetManager = getAssets();
         preLoadCache();
+        new Thread(() -> {
+            int retryCount = 0;
+            int maxRetries = 3;
+            while (retryCount < maxRetries) {
+                try {
+                    FontDetector.init();
+                    break;
+                } catch (Exception e) {
+                    retryCount++;
+                    e.printStackTrace();
+                    if (retryCount < maxRetries) {
+                        try {
+                            Thread.sleep(1000 * retryCount);
+                        } catch (InterruptedException ie) {
+                            Thread.currentThread().interrupt();
+                            break;
+                        }
+                    }
+                }
+            }
+        }).start();
     }
 
     public static App getInstance() {
